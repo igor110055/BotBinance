@@ -94,6 +94,20 @@ def GetTPS(ticker, interval):
     return TPSNow
 
 
+def GetVolume(ticker, interval):
+    global switcher
+    global intervals
+    Data = client.get_historical_klines(
+        ticker, interval,  str(depths[intervals.index(interval)]) + ' ago UTC+1')
+
+    Data = pd.DataFrame(Data)
+    Data.columns = ['TimeStamp', 'Open_Price', 'High_Price', 'Low_Price', 'Close_Price',
+                    'Volume', 'Ignore', 'Quote_Volume', 'Num_Trade', 'Buy_Volume', 'Buy_Vol_Val', 'x']
+    Volume = float(Data['Quote_Volume'])
+    Volume = round(Volume, 1)
+    return Volume
+
+
 def my_function(ticker, interval):
     try:
 
@@ -107,7 +121,8 @@ def my_function(ticker, interval):
             global_detail1 = data.get_analysis().moving_averages
             global_detal2 = data.get_analysis().oscillators
             TPSnow = GetTPS(ticker, interval)
-            msg = str("╔" + str(interval) + ":" + "\n" + "TPS : " + str(TPSnow) + "%" + "\n" + "Summary :" +
+            volume = GetVolume(ticker, interval)
+            msg = str("╔" + str(interval) + ":" + "\n" + "TPS : " + str(TPSnow) + "%" + "\n" + "Volume : " + str(volume) + " $" + "\n" + "Summary :" +
                       str(global_detail['RECOMMENDATION']) + "\nMOVING AVERAGES :" + str(global_detail1['RECOMMENDATION']) + "\n" + "oscillators :" + str(global_detal2['RECOMMENDATION']) + "╝" + "\n" + "\n")
     except Exception as e:
         msg = str(e)
@@ -115,29 +130,31 @@ def my_function(ticker, interval):
     return msg
 
 
-for ticker in tickers:
-    price = client.get_avg_price(symbol=ticker)
+loop = True
+while loop:
+    for ticker in tickers:
+        price = client.get_avg_price(symbol=ticker)
 
-    message = str("→" + ticker + "←" + "\n"+"price → " +
-                  price['price'] + "$" + "\n"+"\n")
-    for interval in intervals:
-        message += str(my_function(ticker, interval))
+        message = str("→" + ticker + "←" + "\n"+"price → " +
+                      price['price'] + "$" + "\n"+"\n")
+        for interval in intervals:
+            message += str(my_function(ticker, interval))
 
-    message += str("\n" + "╱" + "Vwap 48: _______" + "╲"+"\n"+"\n")
-    if VwapPercent(ticker, Client.KLINE_INTERVAL_1DAY, 48) < 0:
-        message += str("Day :" + str(VwapPercent(ticker,
-                       Client.KLINE_INTERVAL_1DAY, 48)) + "   →" + "Risky" + "\n"+"\n")
-    else:
-        message += str("Day :" + VwapPercent(ticker,
-                       Client.KLINE_INTERVAL_1DAY, 48) + "   →" + "Safe" + "\n"+"\n")
+        message += str("\n" + "╱" + "Vwap 48: _______" + "╲"+"\n"+"\n")
+        if VwapPercent(ticker, Client.KLINE_INTERVAL_1DAY, 48) < 0:
+            message += str("Day :" + str(VwapPercent(ticker,
+                                                     Client.KLINE_INTERVAL_1DAY, 48)) + "   →" + "Risky" + "\n"+"\n")
+        else:
+            message += str("Day :" + VwapPercent(ticker,
+                                                 Client.KLINE_INTERVAL_1DAY, 48) + "   →" + "Safe" + "\n"+"\n")
 
-    if VwapPercent(ticker, Client.KLINE_INTERVAL_4HOUR, 48) < 0:
-        message += str("4h :" + str(VwapPercent(ticker, "4h", 48)) +
-                       "   →" + "Risky" + "\n"+"\n")
-    else:
-        message += str("4h :" + str(VwapPercent(ticker, "4h", 48)) +
-                       "   →" + "Safe" + "\n"+"\n")
+        if VwapPercent(ticker, Client.KLINE_INTERVAL_4HOUR, 48) < 0:
+            message += str("4h :" + str(VwapPercent(ticker, "4h", 48)) +
+                           "   →" + "Risky" + "\n"+"\n")
+        else:
+            message += str("4h :" + str(VwapPercent(ticker, "4h", 48)) +
+                           "   →" + "Safe" + "\n"+"\n")
 
-    message += str('--------------------------' + "\n"+"\n")
+        message += str('--------------------------' + "\n"+"\n")
 
-    sendMsg(message)
+        sendMsg(message)
