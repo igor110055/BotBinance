@@ -122,7 +122,7 @@ def my_function(ticker, interval):
             global_detal2 = data.get_analysis().oscillators
             TPSnow = GetTPS(ticker, interval)
             volume = GetVolume(ticker, interval)
-            msg = str("╔" + str(interval) + ":" + "\n" + "TPS : " + str(TPSnow) + "%" + "\n" + "Volume : " + str(volume) + " $" + "\n" + "Summary :" +
+            msg = str("╔" + str(interval) + ":" + "\n" + "TPS : " + str(TPSnow) + " " + "\n" + "Volume : " + str(volume) + " $" + "\n" + "Summary :" +
                       str(global_detail['RECOMMENDATION']) + "\nMOVING AVERAGES :" + str(global_detail1['RECOMMENDATION']) + "\n" + "oscillators :" + str(global_detal2['RECOMMENDATION']) + "╝" + "\n" + "\n")
     except Exception as e:
         msg = str(e)
